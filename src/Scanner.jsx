@@ -19,13 +19,24 @@ const Scanner = () => {
               const devicesTemp = inputs.filter(
                 (device) => device.kind === "videoinput"
               );
+
+              const deviceList = document.getElementById("deviceList");
+              if(deviceList.options.length === 1) {
+                const options = devicesTemp.map((device) => {
+                    const option = document.createElement("option");
+                    option.value = device.deviceId;
+                    option.textContent = device.label;
+                    return option;
+                  })
+                  deviceList.appendChild(...options);
+              }
+              
               setDevices(devicesTemp);
               setDeviceId(devicesTemp[0].deviceId);
-            }); 
+            });
         }
     }, [devices])
     
-
     const formats = useMemo(() => {
       return [
         "qr_code",
@@ -58,13 +69,13 @@ const Scanner = () => {
       <button onClick={() => setIsScanning(!isScanning)}>
         {!isScanning ? "Stop Scanning" : "Start Scanning"}
       </button>
-      <select value={deviceId || devices[0]?.deviceId} onChange={(e) => setDeviceId(e.target.value)}>
+      <select id={"deviceList"} onChange={(e) => setDeviceId(e.target.value)}>
         <option value={undefined}>Select a device</option>
-        {devices.map((device, index) => (
+        {/* {devices.map((device, index) => (
           <option key={index} value={device.deviceId}>
             {device.label}
           </option>
-        ))}
+        ))} */}
       </select>
 
       {devices && devices.length > 0 && <ReactScanner
@@ -94,6 +105,7 @@ const Scanner = () => {
         }}
         constraints={{
           deviceId: deviceId,
+          facingMode: "environment",
         }}
         scanDelay={2000}
       />}
