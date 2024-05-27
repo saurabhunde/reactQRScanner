@@ -1,15 +1,30 @@
-import { Scanner as ReactScanner, useDevices, boundingBox } from '@yudiel/react-qr-scanner';
-import { useState, useCallback, useMemo } from 'react'
+import { Scanner as ReactScanner, boundingBox } from '@yudiel/react-qr-scanner';
+import { useState, useCallback, useMemo, useEffect } from 'react'
 
 const Scanner = () => {
-    const devices = useDevices();
-    const [deviceId, setDeviceId] = useState((devices && devices.length > 0) ? devices[0]?.deviceId : undefined);
+    //const devices = useDevices();
+    const [devices, setDevices] = useState([]);
+    const [deviceId, setDeviceId] = useState(undefined);
     const [result, setResult] = useState([]);
     const [isScanning, setIsScanning] = useState(false);
     const onScanComplete = useCallback((result) => {
         console.log(result);
         setResult(result[0].rawValue)
     }, []);
+
+    useEffect(() => {
+        if(devices && !devices.length) {
+            navigator.mediaDevices.enumerateDevices().then((inputs) => {
+              if (!inputs.length) return;
+              const devicesTemp = inputs.filter(
+                (device) => device.kind === "videoinput"
+              );
+              setDevices(devicesTemp);
+              setDeviceId(devicesTemp[0].deviceId);
+            }); 
+        }
+    }, [devices])
+    
 
     const formats = useMemo(() => {
       return [
