@@ -1,91 +1,87 @@
-import { Scanner as ReactScanner, useDevices } from '@yudiel/react-qr-scanner';
-import { useState } from 'react'
+import { Scanner as ReactScanner, useDevices, boundingBox } from '@yudiel/react-qr-scanner';
+import { useState, useCallback, useMemo } from 'react'
 
 const Scanner = () => {
     const devices = useDevices();
-    const [selectedDevice, setSelectedDevice] = useState(devices ? devices[0]?.deviceId : null);
+    const [deviceId, setDeviceId] = useState((devices && devices.length > 0) ? devices[0]?.deviceId : undefined);
     const [result, setResult] = useState([]);
     const [isScanning, setIsScanning] = useState(false);
-    const onScanComplete = (result) => {
+    const onScanComplete = useCallback((result) => {
         console.log(result);
         setResult(result[0].rawValue)
-    }
-    // useEffect(() => {
-    //   if (!selectedDevice && devices && devices.length > 0) {
-    //     setSelectedDevice(devices[0]?.deviceId)
-    //   }
-    // }, [selectedDevice, devices])
+    }, []);
+
+    const formats = useMemo(() => {
+      return [
+        "qr_code",
+        "micro_qr_code",
+        "rm_qr_code",
+        "maxi_code",
+        "pdf417",
+        "aztec",
+        "data_matrix",
+        "matrix_codes",
+        "dx_film_edge",
+        "databar",
+        "databar_expanded",
+        "codabar",
+        "code_39",
+        "code_93",
+        "code_128",
+        "ean_8",
+        "ean_13",
+        "itf",
+        "linear_codes",
+        "upc_a",
+        "upc_e",
+      ];
+    }, []);
+
   return (
     <>
       <h1>Result- {result}</h1>
       <button onClick={() => setIsScanning(!isScanning)}>
-        {!isScanning ? 'Stop Scanning' : 'Start Scanning'}
+        {!isScanning ? "Stop Scanning" : "Start Scanning"}
       </button>
-      <select
-        onChange={(e) => setSelectedDevice(e.target.value)}
-        value={selectedDevice}
-      >
-        <option key={undefined} value={undefined}>Select Option</option>
-        {devices?.map((device) => (
-          <option key={device.deviceId} value={device.deviceId}>
+      <select value={deviceId || devices[0]?.deviceId} onChange={(e) => setDeviceId(e.target.value)}>
+        <option value={undefined}>Select a device</option>
+        {devices.map((device, index) => (
+          <option key={index} value={device.deviceId}>
             {device.label}
           </option>
         ))}
       </select>
 
-      <ReactScanner
+      {devices && devices.length > 0 && <ReactScanner
         onScan={onScanComplete}
         allowMultiple={true}
-        torch={true}
-        paused={selectedDevice && isScanning}
+        paused={isScanning}
         styles={{
-            // container: {
-            //     backgroundColor: 'grey',
-            //     borderRadius: '10px',
-            // },
-            finderBorder: {
-                borderColor: 'red',
-                color: 'red'
-            },
-            // video: {
-            //     borderRadius: '10px',
-            //     backgroundColor: 'grey',
-            // },
+          // container: {
+          //     backgroundColor: 'grey',
+          //     borderRadius: '10px',
+          // },
+          finderBorder: {
+            borderColor: "red",
+            color: "red",
+          },
+          // video: {
+          //     borderRadius: '10px',
+          //     backgroundColor: 'grey',
+          // },
         }}
-        formats={[
-            'qr_code',
-            'micro_qr_code',
-            'rm_qr_code',
-            'maxi_code',
-            'pdf417',
-            'aztec',
-            'data_matrix',
-            'matrix_codes',
-            'dx_film_edge',
-            'databar',
-            'databar_expanded',
-            'codabar',
-            'code_39',
-            'code_93',
-            'code_128',
-            'ean_8',
-            'ean_13',
-            'itf',
-            'linear_codes',
-            'upc_a',
-            'upc_e'
-        ]}
+        formats={formats}
         components={{
           audio: true,
           onOff: true,
           torch: true,
-          tracker: 'boundingBox',
+          tracker: boundingBox,
         }}
         constraints={{
-            deviceId: selectedDevice
+          deviceId: deviceId,
         }}
         scanDelay={2000}
-      />
+      />}
     </>
   );
 }
