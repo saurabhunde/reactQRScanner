@@ -1,5 +1,5 @@
 import { Scanner as ReactScanner, useDevices } from '@yudiel/react-qr-scanner';
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 const Scanner = () => {
     const devices = useDevices();
@@ -10,11 +10,11 @@ const Scanner = () => {
         console.log(result);
         setResult(result[0].rawValue)
     }
-    useEffect(() => {
-      if (!selectedDevice && devices && devices.length > 0) {
-        setSelectedDevice(devices[0]?.deviceId)
-      }
-    }, [selectedDevice, devices])
+    // useEffect(() => {
+    //   if (!selectedDevice && devices && devices.length > 0) {
+    //     setSelectedDevice(devices[0]?.deviceId)
+    //   }
+    // }, [selectedDevice, devices])
   return (
     <>
       <h1>Result- {result}</h1>
