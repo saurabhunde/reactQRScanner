@@ -12,28 +12,41 @@ const Scanner = () => {
         setResult(result[0].rawValue)
     }, []);
 
+    const fetchDevices = async () => {
+      try {
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        const inputs = await navigator.mediaDevices.enumerateDevices();
+        console.log("devices---> ", inputs);
+        if (!inputs.length) {
+          throw new Error("No devices found.");
+        }
+        const devicesTemp = inputs.filter(
+          (device) => device.kind === "videoinput"
+        );
+
+        const deviceList = document.getElementById("deviceList");
+        if (deviceList.options.length === 1) {
+          const options = devicesTemp.map((device) => {
+            const option = document.createElement("option");
+            option.value = device.deviceId;
+            option.textContent = device.label;
+            return option;
+          });
+          deviceList.appendChild(...options);
+        }
+
+        setDevices(devicesTemp);
+        setDeviceId(devicesTemp[0].deviceId);
+      } catch (error) {
+        console.error("Error fetching devices:", error);
+      }
+    };
+      
     useEffect(() => {
         if(devices && !devices.length) {
-            navigator.mediaDevices.enumerateDevices().then((inputs) => {
-              if (!inputs.length) return;
-              const devicesTemp = inputs.filter(
-                (device) => device.kind === "videoinput"
-              );
-
-              const deviceList = document.getElementById("deviceList");
-              if(deviceList.options.length === 1) {
-                const options = devicesTemp.map((device) => {
-                    const option = document.createElement("option");
-                    option.value = device.deviceId;
-                    option.textContent = device.label;
-                    return option;
-                  })
-                  deviceList.appendChild(...options);
-              }
-              
-              setDevices(devicesTemp);
-              setDeviceId(devicesTemp[0].deviceId);
-            });
+            fetchDevices()
         }
     }, [devices])
     
