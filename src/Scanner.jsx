@@ -1,5 +1,5 @@
 import { Scanner as ReactScanner, boundingBox } from '@yudiel/react-qr-scanner';
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 
 const Scanner = () => {
     //const devices = useDevices();
@@ -7,6 +7,7 @@ const Scanner = () => {
     const [deviceId, setDeviceId] = useState(undefined);
     const [result, setResult] = useState([]);
     const [isScanning, setIsScanning] = useState(false);
+    const selectElement = useRef(null)
     const onScanComplete = useCallback((result) => {
         console.log(result);
         setResult(result[0].rawValue)
@@ -26,17 +27,20 @@ const Scanner = () => {
           (device) => device.kind === "videoinput"
         );
 
-        const deviceList = document.getElementById("deviceList");
-        if (deviceList.options.length === 1) {
-          const options = devicesTemp.map((device) => {
-            const option = document.createElement("option");
-            option.value = device.deviceId;
-            option.textContent = device.label;
-            return option;
-          });
-          deviceList.appendChild(...options);
+        console.log(selectElement);
+        if(selectElement.current && selectElement.current) { 
+            selectElement.current.options.length = 0;
+            const firstOption = document.createElement('option');
+            firstOption.value = '';
+            firstOption.textContent = 'Select a Device...';
+            selectElement.current.appendChild(firstOption);
+            devicesTemp.forEach((device) => {
+              const option = document.createElement('option');
+              option.value = device.deviceId;
+              option.textContent = `${device.label}`;
+              selectElement.current.appendChild(option);
+            });
         }
-
         setDevices(devicesTemp);
         setDeviceId(devicesTemp[0].deviceId);
       } catch (error) {
@@ -82,9 +86,9 @@ const Scanner = () => {
       <button onClick={() => setIsScanning(!isScanning)}>
         {!isScanning ? "Stop Scanning" : "Start Scanning"}
       </button>
-      <select id={"deviceList"} onChange={(e) => setDeviceId(e.target.value)}>
-        <option value={undefined}>Select a device</option>
-        {/* {devices.map((device, index) => (
+      <select ref={selectElement} id={"deviceList"} onChange={(e) => setDeviceId(e.target.value)}>
+        {/* <option value={undefined}>Select a device</option>
+        {devices.map((device, index) => (
           <option key={index} value={device.deviceId}>
             {device.label}
           </option>
